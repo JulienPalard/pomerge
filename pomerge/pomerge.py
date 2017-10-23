@@ -3,6 +3,8 @@
 """Merge translations from one or many po files into one or many others.
 """
 
+import json
+import os
 import sys
 from difflib import SequenceMatcher as SM
 
@@ -36,6 +38,17 @@ def find_translations(files):
     return known_translations
 
 
+def read_memory(memory_file):
+    with open(memory_file) as memory:
+        return json.load(memory)
+
+
+def write_memory(translations, memory_file):
+    with open(memory_file, 'w') as memory:
+        json.dump(translations, memory)
+
+
+
 def write_translations(translations, files, fuzzy=False):
     for po_file in tqdm(files, desc="Updating translations"):
         po_file = polib.pofile(po_file)
@@ -57,8 +70,16 @@ def merge_po_files(from_files, to_files, fuzzy=False):
     """Find known translations from each given files in from_files,
     and update them in files in to_files.
     """
-    translations = find_translations(from_files)
-    write_translations(translations, to_files, fuzzy)
+    memory_file = os.path.expanduser("~/.pomerge.json")
+    if from_files:
+        translations = find_translations(from_files)
+    else:
+        translations = read_memory(memory_file)
+    if to_files:
+        write_translations(translations, to_files, fuzzy)
+    else:
+        write_memory(translations, memory_file)
+
 
 
 def main():
@@ -78,6 +99,15 @@ shell equivalent, like:
 
     shopt -s globstar
     pomerge --from **/*.po --to **/*.po
+
+Giving only --from or only --to works by using a temporary file, so:
+
+    pomerge --from a/*.po --to b/*.po
+
+is equivalent to:
+
+    pomerge --from a/*.po
+    pomerge --to b/*.po
 """)
     parser.add_argument(
         '--fuzzy', action='store_true',
