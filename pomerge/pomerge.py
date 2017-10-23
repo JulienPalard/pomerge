@@ -77,7 +77,7 @@ To find po files recursively, use the globstar option of bash, or your
 shell equivalent, like:
 
     shopt -s globstar
-    pomerge --from *.po **/*.po --to *.po **/*.po
+    pomerge --from **/*.po --to **/*.po
 """)
     parser.add_argument(
         '--fuzzy', action='store_true',
