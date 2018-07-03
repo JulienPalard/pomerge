@@ -14,8 +14,9 @@ from tqdm import tqdm
 
 def find_best_match(possibilities, to_find):
     best_match = (0, None)
-    for possibility in [possib for possib in possibilities
-                        if possib[:5] == to_find[:5]]:
+    for possibility in [
+        possib for possib in possibilities if possib[:5] == to_find[:5]
+    ]:
         match = SM(None, possibility, to_find).ratio()
         if match > best_match[0]:
             best_match = (match, possibility)
@@ -33,7 +34,7 @@ def find_translations(files):
             print("Skipping {}: {}".format(po_file, str(err)), sys.stderr)
             continue
         for entry in po_file:
-            if 'fuzzy' not in entry.flags and entry.msgstr != '':
+            if "fuzzy" not in entry.flags and entry.msgstr != "":
                 known_translations[entry.msgid] = entry.msgstr
     return known_translations
 
@@ -44,9 +45,8 @@ def read_memory(memory_file):
 
 
 def write_memory(translations, memory_file):
-    with open(memory_file, 'w') as memory:
+    with open(memory_file, "w") as memory:
         json.dump(translations, memory)
-
 
 
 def write_translations(translations, files, fuzzy=False):
@@ -55,14 +55,13 @@ def write_translations(translations, files, fuzzy=False):
         for entry in po_file:
             if entry.msgid in translations:
                 entry.msgstr = translations[entry.msgid]
-                if 'fuzzy' in entry.flags:
-                    entry.flags.remove('fuzzy')
+                if "fuzzy" in entry.flags:
+                    entry.flags.remove("fuzzy")
             elif fuzzy:
-                candidate = find_best_match(list(translations.keys()),
-                                            entry.msgid)
+                candidate = find_best_match(list(translations.keys()), entry.msgid)
                 if candidate:
                     entry.msgstr = translations[candidate]
-                    entry.flags.append('fuzzy')
+                    entry.flags.append("fuzzy")
         po_file.save()
 
 
@@ -81,9 +80,9 @@ def merge_po_files(from_files, to_files, fuzzy=False):
         write_memory(translations, memory_file)
 
 
-
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(
         description="""Replicate known translations between sets of po files.
 To propagate known translation in a single set of po files,
@@ -108,20 +107,29 @@ is equivalent to:
 
     pomerge --from a/*.po
     pomerge --to b/*.po
-""")
+"""
+    )
     parser.add_argument(
-        '--fuzzy', action='store_true',
-        help='Also replicate nearly identical strings, '
-        'but when doing so, add a fuzzy flag.')
+        "--fuzzy",
+        action="store_true",
+        help="Also replicate nearly identical strings, "
+        "but when doing so, add a fuzzy flag.",
+    )
     parser.add_argument(
-        '--from-files', '-f', nargs='+',
-        help='File in which known translations are searched')
+        "--from-files",
+        "-f",
+        nargs="+",
+        help="File in which known translations are searched",
+    )
     parser.add_argument(
-        '--to-files', '-t', nargs='+',
-        help='File in which translations will be added or updated')
+        "--to-files",
+        "-t",
+        nargs="+",
+        help="File in which translations will be added or updated",
+    )
     args = parser.parse_args()
     merge_po_files(args.from_files, args.to_files, args.fuzzy)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
