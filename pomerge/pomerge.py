@@ -128,6 +128,9 @@ is equivalent to:
         help="File in which translations will be added or updated",
     )
     args = parser.parse_args()
+    if not args.from_files and not args.to_files:
+        parser.print_help()
+        exit(1)
     merge_po_files(args.from_files, args.to_files, args.fuzzy)
 
 
