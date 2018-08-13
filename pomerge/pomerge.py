@@ -49,15 +49,17 @@ def write_memory(translations, memory_file):
         json.dump(translations, memory)
 
 
-def write_translations(translations, files, fuzzy=False):
+def write_translations(translations, files, fuzzy_matching=False, mark_as_fuzzy=False):
     for po_file in tqdm(files, desc="Updating translations"):
         po_file = polib.pofile(po_file)
         for entry in po_file:
-            if entry.msgid in translations:
+            if entry.msgid in translations and entry.msgstr != translations[entry.msgid]:
                 entry.msgstr = translations[entry.msgid]
                 if "fuzzy" in entry.flags:
                     entry.flags.remove("fuzzy")
-            elif fuzzy:
+                if mark_as_fuzzy:
+                    entry.flags.append("fuzzy")
+            elif fuzzy_matching:
                 candidate = find_best_match(list(translations.keys()), entry.msgid)
                 if candidate:
                     entry.msgstr = translations[candidate]
@@ -65,7 +67,7 @@ def write_translations(translations, files, fuzzy=False):
         po_file.save()
 
 
-def merge_po_files(from_files, to_files, fuzzy=False):
+def merge_po_files(from_files, to_files, fuzzy_matching=False, mark_as_fuzzy=False):
     """Find known translations from each given files in from_files,
     and update them in files in to_files.
     """
@@ -75,7 +77,7 @@ def merge_po_files(from_files, to_files, fuzzy=False):
     else:
         translations = read_memory(memory_file)
     if to_files:
-        write_translations(translations, to_files, fuzzy)
+        write_translations(translations, to_files, fuzzy_matching, mark_as_fuzzy)
     else:
         write_memory(translations, memory_file)
 
@@ -110,10 +112,15 @@ is equivalent to:
 """
     )
     parser.add_argument(
-        "--fuzzy",
+        "--fuzzy-matching",
         action="store_true",
         help="Also replicate nearly identical strings, "
         "but when doing so, add a fuzzy flag.",
+    )
+    parser.add_argument(
+        "--mark-as-fuzzy",
+        action="store_true",
+        help="Mark all new translations as fuzzy.",
     )
     parser.add_argument(
         "--from-files",
@@ -131,7 +138,9 @@ is equivalent to:
     if not args.from_files and not args.to_files:
         parser.print_help()
         exit(1)
-    merge_po_files(args.from_files, args.to_files, args.fuzzy)
+    merge_po_files(
+        args.from_files, args.to_files, args.fuzzy_matching, args.mark_as_fuzzy
+    )
 
 
 if __name__ == "__main__":
