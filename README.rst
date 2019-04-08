@@ -19,7 +19,7 @@ To merge translations from contributors to your files::
 To merge translations from inside a single repository, usefull when simple
 strings can appear in multiple .po files::
 
-    pomerge --from **.*.po --to **/*.po
+    pomerge --from **/*.po --to **/*.po
 
 Note that ``pomerge`` does not care about po file names, a translation
 from one file can land in another as long as their msgid are identical.
