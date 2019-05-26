@@ -34,8 +34,14 @@ def find_translations(files):
             print("Skipping {}: {}".format(po_file, str(err)), sys.stderr)
             continue
         for entry in po_file:
-            if "fuzzy" not in entry.flags and entry.msgstr != "":
+            conditions = (
+                "fuzzy" not in entry.flags,
+                entry.msgid != entry.msgstr,
+                entry.msgstr != "",
+            )
+            if all(conditions):
                 known_translations[entry.msgid] = entry.msgstr
+
     return known_translations
 
 
