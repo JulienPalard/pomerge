@@ -20,7 +20,7 @@ def find_best_match(possibilities, to_find):
         match = SM(None, possibility, to_find).ratio()
         if match > best_match[0]:
             best_match = (match, possibility)
-    if best_match[0] > .9:
+    if best_match[0] > 0.9:
         return best_match[1]
 
 
@@ -49,11 +49,18 @@ def write_memory(translations, memory_file):
         json.dump(translations, memory)
 
 
-def write_translations(translations, files, fuzzy_matching=False, mark_as_fuzzy=False):
+def write_translations(
+    translations, files, fuzzy_matching=False, mark_as_fuzzy=False, overwrite=True
+):
     for po_file in tqdm(files, desc="Updating translations"):
         po_file = polib.pofile(po_file)
         for entry in po_file:
-            if entry.msgid in translations and entry.msgstr != translations[entry.msgid]:
+            if not overwrite and entry.msgstr:
+                continue
+            if (
+                entry.msgid in translations
+                and entry.msgstr != translations[entry.msgid]
+            ):
                 entry.msgstr = translations[entry.msgid]
                 if "fuzzy" in entry.flags:
                     entry.flags.remove("fuzzy")
@@ -67,7 +74,9 @@ def write_translations(translations, files, fuzzy_matching=False, mark_as_fuzzy=
         po_file.save()
 
 
-def merge_po_files(from_files, to_files, fuzzy_matching=False, mark_as_fuzzy=False):
+def merge_po_files(
+    from_files, to_files, fuzzy_matching=False, mark_as_fuzzy=False, overwrite=True
+):
     """Find known translations from each given files in from_files,
     and update them in files in to_files.
     """
@@ -77,7 +86,9 @@ def merge_po_files(from_files, to_files, fuzzy_matching=False, mark_as_fuzzy=Fal
     else:
         translations = read_memory(memory_file)
     if to_files:
-        write_translations(translations, to_files, fuzzy_matching, mark_as_fuzzy)
+        write_translations(
+            translations, to_files, fuzzy_matching, mark_as_fuzzy, overwrite
+        )
     else:
         write_memory(translations, memory_file)
 
@@ -123,6 +134,14 @@ is equivalent to:
         help="Mark all new translations as fuzzy.",
     )
     parser.add_argument(
+        "--no-overwrite",
+        "-n",
+        action="store_true",
+        help="When applying translation, "
+        "do not overwrite existing translations (apply only to untranslated ones).",
+    )
+
+    parser.add_argument(
         "--from-files",
         "-f",
         nargs="+",
@@ -139,7 +158,11 @@ is equivalent to:
         parser.print_help()
         exit(1)
     merge_po_files(
-        args.from_files, args.to_files, args.fuzzy_matching, args.mark_as_fuzzy
+        args.from_files,
+        args.to_files,
+        args.fuzzy_matching,
+        args.mark_as_fuzzy,
+        overwrite=not args.no_overwrite,
     )
 
 
