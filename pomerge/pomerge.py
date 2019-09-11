@@ -164,6 +164,8 @@ is equivalent to:
         args.mark_as_fuzzy,
         overwrite=not args.no_overwrite,
     )
+    if args.to_files:
+        print("Successfully merged, you probably want to run `powrap -m` now.")
 
 
 if __name__ == "__main__":
