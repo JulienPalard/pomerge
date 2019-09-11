@@ -8,7 +8,7 @@ with open("README.rst") as readme_file:
 
 setup(
     name="pomerge",
-    version="0.1.3",
+    version="0.1.4",
     description="Merge known translations between .po files.",
     long_description=readme,
     author="Julien Palard",
