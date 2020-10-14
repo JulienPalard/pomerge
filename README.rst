@@ -11,6 +11,12 @@ Script to merge translations from a set of po files to other set of po files.
 ``pomerge`` does not care about ``.po`` file names, a translation
 from one file can land in another as long as their ``msgid`` are identical.
 
+Pomerge is part of poutils!
+--------------------------
+
+`Poutils <https://pypi.org/project/poutils>`_ (``.po`` utils) is a metapackage to easily install useful Python tools to use with po files
+and ``pomerge`` is a part of it! Go check out `Poutils <https://pypi.org/project/poutils>`_ to discover the other tools!
+
 
 Usage
 -----
